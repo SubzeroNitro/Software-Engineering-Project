@@ -13,6 +13,7 @@
     <string name="dashboard_fragment_delete_collection_dialog_description">This Action Cannot Be Undone</string>
 
     <string name="settings_fragment_title">Settings</string>
+    <string name="settings_fragment_night_mode_switch_label">Dark Mode</string>
 
     <string name="flashcard_collection_button_fragment_default_flashcard_collection_name">New Collection</string>
 
