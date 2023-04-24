@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">Study Monster</string>
+    <string name="app_dashboard">Dashboard</string>
+    <string name="app_settings">Settings</string>
+    <string name="app_flashcard_collection">Collection</string>
+
+    <string name="dashboard_fragment_title">Collections</string>
+    <string name="dashboard_fragment_add_flashcard_collection_button">Add Collection</string>
+    <string name="dashboard_fragment_collection_name_hint">Collection Name</string>
+    <string name="dashboard_fragment_add_collection_dialog_title">Enter Collection Name</string>
+    <string name="dashboard_fragment_edit_collection_dialog_title">Edit Collection Name</string>
+    <string name="dashboard_fragment_delete_collection_dialog_title">Delete Collection?</string>
+    <string name="dashboard_fragment_delete_collection_dialog_description">This Action Cannot Be Undone</string>
+
+    <string name="settings_fragment_title">Settings</string>
+
+    <string name="flashcard_collection_button_fragment_default_flashcard_collection_name">New Collection</string>
+
+    <string name="flashcard_collection_fragment_default_title">Flashcards</string>
+    <string name="flashcard_collection_fragment_add_flashcard_button">Add Flashcard</string>
+    <string name="flashcard_collection_fragment_flashcard_term_hint">Term</string>
+    <string name="flashcard_collection_fragment_flashcard_content_hint">Content</string>
+    <string name="flashcard_collection_fragment_add_flashcard_dialog_title">Enter Flashcard Details</string>
+
+    <string name="flashcard_fragment_default_flashcard_term">Flashcard</string>
+
+    <string name="create_button">Create</string>
+    <string name="cancel_button">Cancel</string>
+
+    <string name="context_menu_edit">Edit</string>
+    <string name="context_menu_delete">Delete</string>
+</resources>
