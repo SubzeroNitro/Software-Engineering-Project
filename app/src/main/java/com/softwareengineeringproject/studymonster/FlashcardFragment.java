@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 public class FlashcardFragment extends Fragment {
-    private boolean isFlipped = false;
+
 
     private String term;
     private String content;
@@ -53,14 +53,7 @@ public class FlashcardFragment extends Fragment {
         button.setText(term);
 
         button.setOnClickListener(view -> {
-            if (isFlipped) {
-                button.setText(term);
-            }
-            else {
-                button.setText(content);
-            }
 
-            isFlipped = !isFlipped;
         });
 
         return layout;

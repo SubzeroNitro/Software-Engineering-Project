@@ -22,4 +22,6 @@ public class FlashcardEntity implements Serializable {
 
     @ColumnInfo(name = "collection_id")
     public int collectionId;
+
+    public boolean isFlipped = false;
 }

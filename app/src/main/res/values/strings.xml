@@ -21,6 +21,9 @@
     <string name="flashcard_collection_fragment_flashcard_term_hint">Term</string>
     <string name="flashcard_collection_fragment_flashcard_content_hint">Content</string>
     <string name="flashcard_collection_fragment_add_flashcard_dialog_title">Enter Flashcard Details</string>
+    <string name="flashcard_collection_fragment_edit_flashcard_dialog_title">Edit Flashcard</string>
+    <string name="flashcard_collection_fragment_delete_flashcard_dialog_title">Delete Flashcard?</string>
+    <string name="flashcard_collection_fragment_delete_flashcard_dialog_description">This Action Cannot Be Undone</string>
 
     <string name="flashcard_fragment_default_flashcard_term">Flashcard</string>
 

@@ -1,5 +1,6 @@
 package com.softwareengineeringproject.studymonster;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
@@ -7,9 +8,12 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.InputFilter;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -34,6 +38,7 @@ public class FlashcardCollectionFragment extends Fragment {
     private AppDatabase database;
     private FlashcardDAO flashcardDAO;
     private List<FlashcardEntity> flashcards;
+    private FlashcardsAdapter adapter;
 
     private String name;
     private int collectionId;
@@ -71,21 +76,6 @@ public class FlashcardCollectionFragment extends Fragment {
 
         database = AppDatabase.GetInstance(activity);
         flashcardDAO = database.FlashcardDAO();
-
-        Executors.newSingleThreadExecutor().execute(() -> {
-            List<FlashcardEntity> test = flashcardDAO.GetFlashcards();
-            flashcards = flashcardDAO.GetFlashcardsInCollection(collectionId);
-
-            FragmentManager fragmentManager = activity.getSupportFragmentManager();
-            FragmentTransaction transaction = fragmentManager.beginTransaction();
-
-            for (FlashcardEntity flashcard : flashcards) {
-                FlashcardFragment flashcardFragment = FlashcardFragment.Instantiate(flashcard.term, flashcard.content);
-                transaction.add(R.id.flashcard_collection_fragment_flashcard_container, flashcardFragment, flashcard.term);
-            }
-
-            transaction.commit();
-        });
     }
 
     @Override
@@ -95,6 +85,18 @@ public class FlashcardCollectionFragment extends Fragment {
             Bundle savedInstanceState) {
         View layout = inflater.inflate(R.layout.fragment_flashcard_collection, container, false);
 
+        RecyclerView recyclerView = layout.findViewById(R.id.flashcard_collection_fragment_flashcard_container);
+
+        Executors.newSingleThreadExecutor().execute(() -> {
+            flashcards = flashcardDAO.GetFlashcardsInCollection(collectionId);
+            adapter = new FlashcardsAdapter(activity, flashcards);
+
+            activity.runOnUiThread(() -> {
+                recyclerView.setAdapter(adapter);
+                recyclerView.setLayoutManager(new LinearLayoutManager(activity));
+            });
+        });
+
         TextView title = layout.findViewById(R.id.flashcard_collection_fragment_title);
         title.setText(name);
 
@@ -102,6 +104,23 @@ public class FlashcardCollectionFragment extends Fragment {
         addFlashcardCollectionButton.setOnClickListener(view -> AddFlashcard());
 
         return layout;
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    @Override
+    public boolean onContextItemSelected(MenuItem menuItem) {
+        switch (menuItem.getItemId()) {
+            case R.id.context_menu_edit:
+                EditFlashcard(adapter.GetPosition());
+                return true;
+
+            case R.id.context_menu_delete:
+                DeleteFlashcard(adapter.GetPosition());
+                return true;
+
+            default:
+                return super.onContextItemSelected(menuItem);
+        }
     }
 
     public void AddFlashcard() {
@@ -163,16 +182,95 @@ public class FlashcardCollectionFragment extends Fragment {
                 }
 
                 flashcardDAO.InsertFlashcard(flashcard);
+                flashcards.add(flashcard);
 
-                FragmentManager fragmentManager = activity.getSupportFragmentManager();
-                FlashcardFragment flashcardFragment = FlashcardFragment.Instantiate(term, content);
-
-                fragmentManager.beginTransaction()
-                        .add(R.id.flashcard_collection_fragment_flashcard_container, flashcardFragment, term)
-                        .commit();
+                activity.runOnUiThread(() -> {
+                    adapter.notifyItemInserted(adapter.getItemCount() - 1);
+                });
 
                 dialog.dismiss();
             });
+        });
+    }
+
+    void EditFlashcard(int position) {
+        final int maxLength = 100;
+
+        LinearLayout layout = new LinearLayout(activity);
+        layout.setOrientation(LinearLayout.VERTICAL);
+
+        EditText termText = new EditText(activity);
+        termText.setHint(R.string.flashcard_collection_fragment_flashcard_term_hint);
+        termText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(maxLength) });
+
+        EditText contentText = new EditText(activity);
+        contentText.setHint(R.string.flashcard_collection_fragment_flashcard_content_hint);
+        contentText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(maxLength) });
+
+        layout.addView(termText);
+        layout.addView(contentText);
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
+
+        alertDialog.setTitle(R.string.flashcard_collection_fragment_edit_flashcard_dialog_title);
+        alertDialog.setView(layout);
+        alertDialog.setCancelable(false);
+
+        alertDialog.setPositiveButton(R.string.context_menu_edit, null);
+        alertDialog.setNegativeButton(R.string.cancel_button, (dialog, which) -> dialog.cancel());
+
+        AlertDialog dialog = alertDialog.show();
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(dialogView -> {
+            String term = termText.getText().toString();
+            String content = contentText.getText().toString();
+
+            if (term.trim().isEmpty()) {
+                termText.setError("Invalid Flashcard Term");
+                return;
+            }
+
+            if (content.trim().isEmpty()) {
+                contentText.setError("Invalid Flashcard Content");
+                return;
+            }
+
+            FlashcardEntity flashcard = flashcards.get(position);
+            flashcard.term = term;
+            flashcard.content = content;
+
+            flashcards.set(position, flashcard);
+            adapter.notifyItemChanged(position);
+
+            Executors.newSingleThreadExecutor().execute(() -> flashcardDAO.UpdateFlashcard(flashcard));
+
+            dialog.dismiss();
+        });
+    }
+
+    void DeleteFlashcard(int position) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
+
+        alertDialog.setTitle(R.string.flashcard_collection_fragment_delete_flashcard_dialog_title);
+        alertDialog.setMessage(R.string.flashcard_collection_fragment_delete_flashcard_dialog_description);
+        alertDialog.setCancelable(false);
+
+        alertDialog.setPositiveButton(R.string.context_menu_delete, null);
+        alertDialog.setNegativeButton(R.string.cancel_button, (dialog, which) -> dialog.cancel());
+
+        AlertDialog dialog = alertDialog.show();
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(dialogView -> {
+            FlashcardEntity flashcard = flashcards.get(position);
+
+            flashcards.remove(position);
+            adapter.notifyItemRemoved(position);
+
+            Executors.newSingleThreadExecutor().execute(() -> {
+                flashcardDAO.DeleteFlashcard(flashcard.id);
+            });
+
+            dialog.dismiss();
         });
     }
 }
